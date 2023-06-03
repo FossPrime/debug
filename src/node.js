@@ -236,9 +236,9 @@ function init(debug) {
 		debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
 	}
 }
-const createDebug = require('./common')(exports)
-module.exports.default = createDebug;
-module.exports.createDebug = createDebug;
+
+module.exports.createDebug = require('./common')(exports);
+module.exports.createDebug = module.exports.createDebug;
 
 const {formatters} = module.exports;
 
