@@ -1,3 +1,3 @@
-import cjsModule from './index.cjs';
+import cjsModule from './index.js';
 export const debug = cjsModule.default;
 export default debug
