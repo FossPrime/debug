@@ -120,7 +120,8 @@ function getDate() {
  */
 
 function log(...args) {
-  return Deno.stderr.write(util.format(...args) + '\n')
+  const message = new Deno.Buffer(new TextEncoder().encode(util.format(...args) + '\n'))
+  return Deno.stderr.write(message)
 }
 
 /**
