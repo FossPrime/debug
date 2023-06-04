@@ -61,20 +61,19 @@ export default function setup(env) {
     let namespacesCache
     let enabledCache
 
-    function debug(...args) {
+    const debug = (...args) => {
       // Disabled?
       if (!debug.enabled) {
         return
       }
 
       console.log('common/createDebug/debug:5', this)
-      const self = this
 
       // Set `diff` timestamp
       const curr = Number(new Date())
-      self.diff = curr - (prevTime || curr)
-      self.prev = prevTime
-      self.curr = curr
+      namespace.diff = curr - (prevTime || curr)
+      namespace.prev = prevTime
+      namespace.curr = curr
       prevTime = curr
 
       args[0] = createDebug.coerce(args[0])
@@ -105,10 +104,10 @@ export default function setup(env) {
       })
 
       // Apply env-specific formatting (colors, etc.)
-      createDebug.formatArgs.call(self, args)
+      createDebug.formatArgs.call(namespace, args)
 
-      const logFn = self.log || createDebug.log
-      logFn.apply(self, args)
+      const logFn = namespace.log || createDebug.log
+      logFn.apply(namespace, args)
     }
 
     debug.namespace = namespace
