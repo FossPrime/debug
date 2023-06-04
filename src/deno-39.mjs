@@ -1,9 +1,9 @@
 /**
  * Module dependencies.
  */
-import common from './common-10.mjs'
+import { setupCommon } from './common-10.mjs'
 import * as tty from 'https://deno.land/x/tty/mod.ts'
-import * as util from 'https://deno.land/std@0.110.0/node/util.ts'
+import { inspect, format } from 'https://deno.land/std@0.110.0/node/util.ts'
 import { ms } from "https://raw.githubusercontent.com/denolib/ms/master/ms.ts";
 
 
@@ -11,7 +11,8 @@ import { ms } from "https://raw.githubusercontent.com/denolib/ms/master/ms.ts";
  * This is the Node.js implementation of `debug()`.
  */
 
-const configMap = {
+const DenoRuntime = {
+  common: {}, // common's state
   init: init,
   log: log,
   formatArgs: formatArgs,
@@ -19,9 +20,7 @@ const configMap = {
   load: load,
   useColors: useColors,
   colors: [6, 2, 3, 4, 5, 1],
-  humanize: ms, // bad idea
-  destroy: util.deprecate(() => {},
-  'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'),
+  formatters: {}
 }
 
 /**
@@ -34,7 +33,7 @@ const configMap = {
 //   const supportsColor = await import('supports-color')
 
 //   if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
-//     configMap.colors = [
+//     DenoRuntime.colors = [
 //       20, 21, 26, 27, 32, 33, 38, 39, 40, 41, 42, 43, 44, 45, 56, 57, 62, 63,
 //       68, 69, 74, 75, 76, 77, 78, 79, 80, 81, 92, 93, 98, 99, 112, 113, 128,
 //       129, 134, 135, 148, 149, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169,
@@ -47,12 +46,12 @@ const configMap = {
 // }
 
 /**
- * Build up the default `inspectOpts` object from the environment variables.
+ * Build up the default `inspectOpts` object from the Environment variables.
  *
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
 
-configMap.inspectOpts = Object.keys(Deno.env.toObject())
+DenoRuntime.inspectOpts = Object.keys(Deno.env.toObject())
   .filter((key) => {
     return /^debug_/i.test(key)
   })
@@ -84,10 +83,9 @@ configMap.inspectOpts = Object.keys(Deno.env.toObject())
 /**
  * Is stdout a TTY? Colored output is enabled when `true`.
  */
-
 function useColors() {
-  return 'colors' in configMap.inspectOpts
-    ? Boolean(configMap.inspectOpts.colors)
+  return 'colors' in DenoRuntime.inspectOpts
+    ? Boolean(DenoRuntime.inspectOpts.colors)
     : false // tty.isatty(process.stderr.fd)
 }
 
@@ -96,35 +94,32 @@ function useColors() {
  *
  * @api public
  */
-
 function formatArgs(args) {
-  const { namespace: name, useColors, diff } = this
+  const { namespace: name, useColors, diff } = this // bad
 
-  console.log("formatArgs", this)
   if (useColors) {
     const c = this.color
     const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c)
     const prefix = `  ${colorCode};1m${name} \u001B[0m`
 
     args[0] = prefix + args[0].split('\n').join('\n' + prefix)
-    args.push(colorCode + 'm+' + configMap.humanize(diff) + '\u001B[0m')
+    args.push(colorCode + 'm+' + ms(diff) + '\u001B[0m')
   } else {
     args[0] = getDate() + name + ' ' + args[0]
   }
 }
 
 function getDate() {
-  if (configMap.inspectOpts.hideDate) {
+  if (DenoRuntime.inspectOpts.hideDate) {
     return ''
   }
 }
 
 /**
- * Invokes `util.format()` with the specified arguments and writes to stderr.
+ * Invokes `format()` with the specified arguments and writes to stderr.
  */
-
 function log(...args) {
-  return Deno.stderr.write(new TextEncoder().encode(util.format(...args) + '\n'))
+  return Deno.stderr.write(new TextEncoder().encode(format(...args) + '\n'))
 }
 
 /**
@@ -161,36 +156,34 @@ function load() {
  * differently for a particular `debug` instance.
  */
 
-function init(debug) {
+const initEnv = (debug) => {
   debug.inspectOpts = {}
 
-  const keys = Object.keys(configMap.inspectOpts)
+  const keys = Object.keys(DenoRuntime.inspectOpts)
   for (let i = 0; i < keys.length; i++) {
-    debug.inspectOpts[keys[i]] = configMap.inspectOpts[keys[i]]
+    debug.inspectOpts[keys[i]] = DenoRuntime.inspectOpts[keys[i]]
   }
 }
 
-export const createDebug = common(configMap)
-// export const = module.exports.createDebug;
-
 /**
- * Map %o to `util.inspect()`, all on a single line.
+ * Map %o to `inspect()`, all on a single line.
  */
 
-configMap.formatters.o = function (v) {
+DenoRuntime.formatters.o = function (v) {
   this.inspectOpts.colors = this.useColors
-  return util
-    .inspect(v, this.inspectOpts)
+  return inspect(v, this.inspectOpts)
     .split('\n')
     .map((str) => str.trim())
     .join(' ')
 }
 
 /**
- * Map %O to `util.inspect()`, allowing multiple lines if needed.
+ * Map %O to `inspect()`, allowing multiple lines if needed.
  */
 
-configMap.formatters.O = function (v) {
+DenoRuntime.formatters.O = function (v) {
   this.inspectOpts.colors = this.useColors
-  return util.inspect(v, this.inspectOpts)
+  return inspect(v, this.inspectOpts)
 }
+
+export const createDebug = common(DenoRuntime).createDebug

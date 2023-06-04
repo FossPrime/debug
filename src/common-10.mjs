@@ -3,275 +3,224 @@
  * implementations of `debug()`.
  */
 
-export default function setup(env) {
-  createDebug.debug = createDebug
-  createDebug.default = createDebug
-  createDebug.coerce = coerce
-  createDebug.disable = disable
-  createDebug.enable = enable
-  createDebug.enabled = enabled
-  createDebug.destroy = destroy
+/**
+ * Selects a color for a debug namespace
+ * @param {String} namespace The namespace string for the debug instance to be colored
+ * @return {Number|String} An ANSI color code for the given namespace
+ * @api private
+ */
+const selectColor = (namespace) => {
+  let hash = 0
 
-  Object.keys(env).forEach((key) => {
-    createDebug[key] = env[key]
+  for (let i = 0; i < namespace.length; i++) {
+    hash = (hash << 5) - hash + namespace.charCodeAt(i)
+    hash |= 0 // Convert to 32bit integer
+  }
+
+  return common.colors[Math.abs(hash) % common.colors.length]
+}
+
+const debug = function (...args) {
+  this.enabled = { // allows runtime disabling and re-enabling
+    get: () => {
+      if (sm.enableOverride !== null) {
+        return sm.enableOverride
+      }
+
+      return true
+    },
+    set: (v) => {
+      sm.enableOverride = v
+    }
+  }
+
+  if (!this.enabled) {
+    return
+  }
+
+
+  this.namespace = namespace
+  this.color = common.selectColor(namespace)
+  let myMessage = args[0]
+
+  // Set `diff` timestamp
+  const curr = Number(new Date())
+  this.diff = curr - (sm.prevTime || curr)
+  this.prev = sm.prevTime
+  this.curr = curr
+  sm.prevTime = curr
+
+  myMessage = myMessage instanceof Error ? myMessage.stack || myMessage.message :myMessage
+
+  if (typeof myMessage !== 'string') {
+    args.unshift('%O') // Anything else let's inspect with %O
+  }
+
+  // Apply any `formatters` transformations
+  let index = 0
+  myMessage = myMessage.replace(/%([a-zA-Z%])/g, (match, format) => {
+    // If we encounter an escaped % then don't increase the array index
+    if (match === '%%') {
+      return '%'
+    }
+    index++
+    const formatter = common.formatters[format]
+    if (typeof formatter === 'function') {
+      const val = args[index]
+      match = formatter.call(this, val)
+
+      // Now we need to remove `args[index]` since it's inlined in the `format`
+      args.splice(index, 1)
+      index--
+    }
+    return match
   })
 
-  /**
-   * The currently active debug mode names, and names to skip.
-   */
+  // Apply Env-specific formatting (colors, etc.)
+  common.formatArgs.call(this, args)
 
-  createDebug.names = []
-  createDebug.skips = []
+  const logFn = namespace.log || common.log
+  logFn.apply(namespace, args)
+}
 
-  /**
-   * Map of special "%n" handling functions, for the debug "format" argument.
-   *
-   * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
-   */
-  env.formatters = {}
 
-  /**
-   * Selects a color for a debug namespace
-   * @param {String} namespace The namespace string for the debug instance to be colored
-   * @return {Number|String} An ANSI color code for the given namespace
-   * @api private
-   */
-  function selectColor(namespace) {
-    let hash = 0
 
-    for (let i = 0; i < namespace.length; i++) {
-      hash = (hash << 5) - hash + namespace.charCodeAt(i)
-      hash |= 0 // Convert to 32bit integer
-    }
-
-    return createDebug.colors[Math.abs(hash) % createDebug.colors.length]
-  }
-  createDebug.selectColor = selectColor
-
-  /**
-   * Create a debugger with the given `namespace`.
-   *
-   * @param {String} namespace
-   * @return {Function}
-   * @api public
-   */
-  function createDebug(namespace) {
-    let prevTime
-    let enableOverride = null
-    let namespacesCache
-    let enabledCache
-
-    const debug = (...args) => {
-      // Disabled?
-      if (!debug.enabled) {
-        return
-      }
-
-      console.log('common/createDebug/debug:5', this)
-
-      // Set `diff` timestamp
-      const curr = Number(new Date())
-      namespace.diff = curr - (prevTime || curr)
-      namespace.prev = prevTime
-      namespace.curr = curr
-      prevTime = curr
-
-      args[0] = createDebug.coerce(args[0])
-
-      if (typeof args[0] !== 'string') {
-        // Anything else let's inspect with %O
-        args.unshift('%O')
-      }
-
-      // Apply any `formatters` transformations
-      let index = 0
-      args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
-        // If we encounter an escaped % then don't increase the array index
-        if (match === '%%') {
-          return '%'
-        }
-        index++
-        const formatter = createDebug.formatters[format]
-        if (typeof formatter === 'function') {
-          const val = args[index]
-          match = formatter.call(this, val)
-
-          // Now we need to remove `args[index]` since it's inlined in the `format`
-          args.splice(index, 1)
-          index--
-        }
-        return match
-      })
-
-      // Apply env-specific formatting (colors, etc.)
-      createDebug.formatArgs.call(namespace, args)
-
-      const logFn = namespace.log || createDebug.log
-      logFn.apply(namespace, args)
-    }
-
-    debug.namespace = namespace
-    debug.useColors = createDebug.useColors()
-    debug.color = createDebug.selectColor(namespace)
-    debug.extend = extend
-    debug.destroy = createDebug.destroy // XXX Temporary. Will be removed in the next major release.
-
-    Object.defineProperty(debug, 'enabled', {
-      enumerable: true,
-      configurable: false,
-      get: () => {
-        if (enableOverride !== null) {
-          return enableOverride
-        }
-        if (namespacesCache !== createDebug.namespaces) {
-          namespacesCache = createDebug.namespaces
-          enabledCache = createDebug.enabled(namespace)
-        }
-
-        return enabledCache
-      },
-      set: (v) => {
-        enableOverride = v
-      },
-    })
-
-    // Env-specific initialization logic for debug instances
-    if (typeof createDebug.init === 'function') {
-      createDebug.init(debug)
-    }
-
-    return debug
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+function createDebug(context, namespace) {
+  const sm = {
+    enableOverride: null
   }
 
-  function extend(namespace, delimiter) {
-    const newDebug = createDebug(
-      this.namespace +
-        (typeof delimiter === 'undefined' ? ':' : delimiter) +
-        namespace
-    )
-    newDebug.log = this.log
-    return newDebug
+  debug.prototype.sm = 
+
+  debug.useColors = common.useColors() // bad
+  debug.extend = extend(context, this)
+
+  // Env-specific initialization logic for debug instances
+  if (typeof common.init === 'function') {
+    common.init(debug)
   }
 
-  /**
-   * Enables a debug mode by namespaces. This can include modes
-   * separated by a colon and wildcards.
-   *
-   * @param {String} namespaces
-   * @api public
-   */
-  function enable(namespaces) {
-    env.save(namespaces)
-    createDebug.namespaces = namespaces
+  return debug
+}
 
-    createDebug.names = []
-    createDebug.skips = []
+// todo attach this to debug, or turn into a factory
+const extend = (context, debug) => (namespace, delimiter) => {
+  const newDebug = context.createDebug(
+    debug.namespace +
+      (typeof delimiter === 'undefined' ? ':' : delimiter) +
+      namespace
+  )
+  newDebug.log = debug.log
+  return newDebug
+}
 
-    let i
-    const split = (typeof namespaces === 'string' ? namespaces : '').split(
-      /[\s,]+/
-    )
-    const len = split.length
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+function enableNamespaces(ctx, namespaces) {
+  ctx.save(namespaces)
+  ctx.namespaces = namespaces
 
-    for (i = 0; i < len; i++) {
-      if (!split[i]) {
-        // ignore empty strings
-        continue
-      }
+  ctx.names = []
+  ctx.skips = []
 
-      namespaces = split[i].replace(/\*/g, '.*?')
+  let i
+  const split = (typeof namespaces === 'string' ? namespaces : '').split(
+    /[\s,]+/
+  )
+  const len = split.length
 
-      if (namespaces[0] === '-') {
-        createDebug.skips.push(new RegExp('^' + namespaces.slice(1) + '$'))
-      } else {
-        createDebug.names.push(new RegExp('^' + namespaces + '$'))
-      }
+  for (i = 0; i < len; i++) {
+    if (!split[i]) {
+      // ignore empty strings
+      continue
+    }
+
+    namespaces = split[i].replace(/\*/g, '.*?')
+
+    if (namespaces[0] === '-') {
+      ctx.skips.push(new RegExp('^' + namespaces.slice(1) + '$'))
+    } else {
+      ctx.names.push(new RegExp('^' + namespaces + '$'))
     }
   }
+}
 
-  /**
-   * Disable debug output.
-   *
-   * @return {String} namespaces
-   * @api public
-   */
-  function disable() {
-    const namespaces = [
-      ...createDebug.names.map(toNamespace),
-      ...createDebug.skips.map(toNamespace).map((namespace) => '-' + namespace),
-    ].join(',')
-    createDebug.enable('')
-    return namespaces
-  }
-
-  /**
-   * Returns true if the given mode name is enabled, false otherwise.
-   *
-   * @param {String} name
-   * @return {Boolean}
-   * @api public
-   */
-  function enabled(name) {
-    if (name[name.length - 1] === '*') {
-      return true
-    }
-
-    let i
-    let len
-
-    for (i = 0, len = createDebug.skips.length; i < len; i++) {
-      if (createDebug.skips[i].test(name)) {
-        return false
-      }
-    }
-
-    for (i = 0, len = createDebug.names.length; i < len; i++) {
-      if (createDebug.names[i].test(name)) {
-        return true
-      }
-    }
-
-    return false
-  }
-
-  /**
-   * Convert regexp to namespace
-   *
-   * @param {RegExp} regxep
-   * @return {String} namespace
-   * @api private
-   */
-  function toNamespace(regexp) {
-    return regexp
-      .toString()
+/**
+ * Disable debug output.
+ *
+ * @return {String} namespaces
+ * @api public
+ */
+function disableNamespaces(ctx) {
+  const toNamespace = (regexp) => regexp.toString()
       .substring(2, regexp.toString().length - 2)
       .replace(/\.\*\?$/, '*')
-  }
 
-  /**
-   * Coerce `val`.
-   *
-   * @param {Mixed} val
-   * @return {Mixed}
-   * @api private
-   */
-  function coerce(val) {
-    if (val instanceof Error) {
-      return val.stack || val.message
-    }
-    return val
-  }
-
-  /**
-   * XXX DO NOT USE. This is a temporary stub function.
-   * XXX It WILL be removed in the next major release.
-   */
-  function destroy() {
-    console.warn(
-      'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'
-    )
-  }
-
-  createDebug.enable(env.load())
-  return createDebug
+  const namespaces = [
+    ...ctx.names.map(toNamespace),
+    ...ctx.skips.map(toNamespace).map((namespace) => '-' + namespace),
+  ].join(',')
+  ctx.enable('')
+  return namespaces
 }
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+const verifyNamespaceEnabled = (context, name) => {
+  if (name[name.length - 1] === '*') {
+    return true
+  }
+
+  let i
+  let len
+
+  for (i = 0, len = context.skips.length; i < len; i++) {
+    if (context.skips[i].test(name)) {
+      return false
+    }
+  }
+
+  for (i = 0, len = context.names.length; i < len; i++) {
+    if (context.names[i].test(name)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+
+const setupCore = (DebugRuntime) => {
+  const context = {
+    names: [], // currently active debug mode names
+    skips: [], // names to skip.
+    formatters: {}, // "%n" handling functions, global
+    prevTime: Date.now(),
+    DebugRuntime
+  }
+
+  enableNamespaces(context, DebugRuntime.load())
+  disableNamespaces(context)
+
+  return createDebug.bind(context)
+}
+
+export { setupCore, verifyNamespaceEnabled }
+// export default setupCommon // Uncoment in 2025
