@@ -51,7 +51,7 @@ try {
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
 
-configMap.inspectOpts = Object.keys(process.env)
+configMap.inspectOpts = Object.keys(Deno.env)
   .filter((key) => {
     return /^debug_/i.test(key)
   })
@@ -65,7 +65,7 @@ configMap.inspectOpts = Object.keys(process.env)
       })
 
     // Coerce string value into JS value
-    let val = process.env[key]
+    let val = Deno.env[key]
     if (/^(yes|on|true|enabled)$/i.test(val)) {
       val = true
     } else if (/^(no|off|false|disabled)$/i.test(val)) {
@@ -87,7 +87,7 @@ configMap.inspectOpts = Object.keys(process.env)
 function useColors() {
   return 'colors' in configMap.inspectOpts
     ? Boolean(configMap.inspectOpts.colors)
-    : tty.isatty(process.stderr.fd)
+    : false // tty.isatty(process.stderr.fd)
 }
 
 /**
@@ -122,7 +122,8 @@ function getDate() {
  */
 
 function log(...args) {
-  return process.stderr.write(util.format(...args) + '\n')
+  // return process.stderr.write(util.format(...args) + '\n')
+  console.log(...args)
 }
 
 /**
@@ -133,11 +134,11 @@ function log(...args) {
  */
 function save(namespaces) {
   if (namespaces) {
-    process.env.DEBUG = namespaces
+    Deno.env.DEBUG = namespaces
   } else {
-    // If you set a process.env field to null or undefined, it gets cast to the
+    // If you set a Deno.env field to null or undefined, it gets cast to the
     // string 'null' or 'undefined'. Just delete instead.
-    delete process.env.DEBUG
+    delete Deno.env.DEBUG
   }
 }
 
@@ -149,7 +150,7 @@ function save(namespaces) {
  */
 
 function load() {
-  return process.env.DEBUG
+  return Deno.env.DEBUG
 }
 
 /**
