@@ -1,6 +1,4 @@
 console.log('FUCK')
-export const debug from (createSetup)
-export default debug
 
 /**
  * Module dependencies.
