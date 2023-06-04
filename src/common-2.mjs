@@ -278,5 +278,3 @@ export default function setup(env) {
 
   return createDebug
 }
-
-module.exports = setup
