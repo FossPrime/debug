@@ -4,7 +4,7 @@ console.log('FUCK')
  * Module dependencies.
  */
 
-import tty from 'npm:tty'
+import * as tty from "https://deno.land/x/tty/mod.ts";
 import util from 'npm:util'
 
 /**
