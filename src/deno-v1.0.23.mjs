@@ -169,7 +169,7 @@ function init(debug) {
   }
 }
 
-export const createDebug = common(configMap.colors)
+export const createDebug = common(configMap)
 // export const = module.exports.createDebug;
 
 /**
