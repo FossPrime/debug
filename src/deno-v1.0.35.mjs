@@ -49,7 +49,7 @@ const configMap = {
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
 
-configMap.inspectOpts = Object.keys(Deno.env)
+configMap.inspectOpts = Object.keys(Deno.env.toObject())
   .filter((key) => {
     return /^debug_/i.test(key)
   })
@@ -63,7 +63,7 @@ configMap.inspectOpts = Object.keys(Deno.env)
       })
 
     // Coerce string value into JS value
-    let val = Deno.env[key]
+    let val = Deno.env.get("key")
     if (/^(yes|on|true|enabled)$/i.test(val)) {
       val = true
     } else if (/^(no|off|false|disabled)$/i.test(val)) {
