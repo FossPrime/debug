@@ -29,7 +29,7 @@ export default function setup(env) {
    *
    * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
    */
-  createDebug.formatters = {}
+  env.formatters = {}
 
   /**
    * Selects a color for a debug namespace
