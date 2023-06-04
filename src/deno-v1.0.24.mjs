@@ -176,7 +176,7 @@ export const createDebug = common(configMap)
  * Map %o to `util.inspect()`, all on a single line.
  */
 
-formatters.o = function (v) {
+configMap.formatters.o = function (v) {
   this.inspectOpts.colors = this.useColors
   return util
     .inspect(v, this.inspectOpts)
@@ -189,7 +189,7 @@ formatters.o = function (v) {
  * Map %O to `util.inspect()`, allowing multiple lines if needed.
  */
 
-formatters.O = function (v) {
+configMap.formatters.O = function (v) {
   this.inspectOpts.colors = this.useColors
   return util.inspect(v, this.inspectOpts)
 }
