@@ -5,7 +5,7 @@ console.log('FUCK')
  */
 
 import tty from 'tty'
-import util from 'util'
+import util from 'npm:util'
 
 /**
  * This is the Node.js implementation of `debug()`.
