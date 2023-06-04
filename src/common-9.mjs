@@ -67,12 +67,12 @@ export default function setup(env) {
         return
       }
 
+      console.log('common/createDebug/debug:5', this)
       const self = this
 
       // Set `diff` timestamp
       const curr = Number(new Date())
-      const ms = curr - (prevTime || curr)
-      self.diff = ms
+      self.diff = curr - (prevTime || curr)
       self.prev = prevTime
       self.curr = curr
       prevTime = curr
@@ -95,7 +95,7 @@ export default function setup(env) {
         const formatter = createDebug.formatters[format]
         if (typeof formatter === 'function') {
           const val = args[index]
-          match = formatter.call(self, val)
+          match = formatter.call(this, val)
 
           // Now we need to remove `args[index]` since it's inlined in the `format`
           args.splice(index, 1)
