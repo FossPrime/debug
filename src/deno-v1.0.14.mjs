@@ -51,7 +51,7 @@ try {
  *   $ DEBUG_COLORS=no DEBUG_DEPTH=10 DEBUG_SHOW_HIDDEN=enabled node script.js
  */
 
-exports.inspectOpts = Object.keys(process.env)
+configMap.inspectOpts = Object.keys(process.env)
   .filter((key) => {
     return /^debug_/i.test(key)
   })
@@ -85,8 +85,8 @@ exports.inspectOpts = Object.keys(process.env)
  */
 
 function useColors() {
-  return 'colors' in exports.inspectOpts
-    ? Boolean(exports.inspectOpts.colors)
+  return 'colors' in configMap.inspectOpts
+    ? Boolean(configMap.inspectOpts.colors)
     : tty.isatty(process.stderr.fd)
 }
 
@@ -105,16 +105,14 @@ function formatArgs(args) {
     const prefix = `  ${colorCode};1m${name} \u001B[0m`
 
     args[0] = prefix + args[0].split('\n').join('\n' + prefix)
-    args.push(
-      colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m'
-    )
+    args.push(colorCode + 'm+' + configMap.humanize(this.diff) + '\u001B[0m')
   } else {
     args[0] = getDate() + name + ' ' + args[0]
   }
 }
 
 function getDate() {
-  if (exports.inspectOpts.hideDate) {
+  if (configMap.inspectOpts.hideDate) {
     return ''
   }
 }
