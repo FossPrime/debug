@@ -163,7 +163,7 @@ export default function setup(env) {
    * @api public
    */
   function enable(namespaces) {
-    createDebug.save(namespaces)
+    env.save(namespaces)
     createDebug.namespaces = namespaces
 
     createDebug.names = []
@@ -274,7 +274,6 @@ export default function setup(env) {
     )
   }
 
-  //  createDebug.enable(createDebug.load())
-  createDebug.enable(Deno.env.DEBUG)
+  createDebug.enable(env.load())
   return createDebug
 }
