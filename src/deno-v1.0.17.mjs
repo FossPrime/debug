@@ -3,7 +3,7 @@ console.log('FUCK')
 /**
  * Module dependencies.
  */
-import common from './common.js'
+import common from './common.mjs'
 import * as tty from 'https://deno.land/x/tty/mod.ts'
 import * as util from 'https://deno.land/std@0.110.0/node/util.ts'
 
