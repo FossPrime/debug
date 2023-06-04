@@ -1,9 +1,11 @@
 /**
  * Module dependencies.
  */
-import common from './common-6.mjs'
+import common from './common-7.mjs'
 import * as tty from 'https://deno.land/x/tty/mod.ts'
 import * as util from 'https://deno.land/std@0.110.0/node/util.ts'
+import { ms } from "https://raw.githubusercontent.com/denolib/ms/master/ms.ts";
+
 
 /**
  * This is the Node.js implementation of `debug()`.
@@ -17,6 +19,7 @@ const configMap = {
   load: load,
   useColors: useColors,
   colors: [6, 2, 3, 4, 5, 1],
+  humanize: ms,
   destroy: util.deprecate(() => {},
   'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'),
 }
