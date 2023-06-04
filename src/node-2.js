@@ -238,7 +238,7 @@ function init(debug) {
 }
 
 module.exports.createDebug = require('./common')(exports);
-module.exports.createDebug = module.exports.createDebug;
+module.exports.default = module.exports.createDebug;
 
 const {formatters} = module.exports;
 
