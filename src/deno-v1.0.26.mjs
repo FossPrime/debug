@@ -134,11 +134,11 @@ function log(...args) {
  */
 function save(namespaces) {
   if (namespaces) {
-    Deno.env.DEBUG = namespaces
+    Deno.env.set("DEBUG", namespaces)
   } else {
     // If you set a Deno.env field to null or undefined, it gets cast to the
     // string 'null' or 'undefined'. Just delete instead.
-    delete Deno.env.DEBUG
+    delete Deno.env.get("DEBUG")
   }
 }
 
@@ -150,7 +150,7 @@ function save(namespaces) {
  */
 
 function load() {
-  return Deno.env.DEBUG
+  return Deno.env.get("DEBUG")
 }
 
 /**
