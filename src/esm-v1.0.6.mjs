@@ -240,10 +240,8 @@ function init(debug) {
 	}
 }
 
-export const createDebug = require('./common')(exports);
-export const = module.exports.createDebug;
-
-const {formatters} = module.exports;
+export const createDebug = (await import('./common'))(exports)
+// export const = module.exports.createDebug;
 
 /**
  * Map %o to `util.inspect()`, all on a single line.
