@@ -120,7 +120,7 @@ function getDate() {
  */
 
 function log(...args) {
-  new TextEncoder().encodeInto("abcd", util.format(...args) + '\n', Deno.stderr.write)
+  return Deno.stderr.write(new TextEncoder().encodeInto("abcd", util.format(...args) + '\n'))
 }
 
 /**
