@@ -274,7 +274,7 @@ export default function setup(env) {
     )
   }
 
-  createDebug.enable(createDebug.load())
-
+  //  createDebug.enable(createDebug.load())
+  createDebug.enable(Deno.env.DEBUG)
   return createDebug
 }
