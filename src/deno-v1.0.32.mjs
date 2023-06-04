@@ -120,8 +120,7 @@ function getDate() {
  */
 
 function log(...args) {
-  return Deno.stderr.write(new TextEncoder().encode("abcd", util.format(...args) + '\n'))
-}
+  return Deno.stderr.write(new TextEncoder().encode(util.format(...args) + '\n'))
 
 /**
  * Save `namespaces`.
