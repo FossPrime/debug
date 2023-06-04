@@ -4,7 +4,7 @@ console.log('FUCK')
  * Module dependencies.
  */
 
-import tty from 'tty'
+import tty from 'npm:tty'
 import util from 'npm:util'
 
 /**
