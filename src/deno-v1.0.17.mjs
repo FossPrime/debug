@@ -3,7 +3,7 @@ console.log('FUCK')
 /**
  * Module dependencies.
  */
-
+import common from './common.js'
 import * as tty from 'https://deno.land/x/tty/mod.ts'
 import * as util from 'https://deno.land/std@0.110.0/node/util.ts'
 
@@ -169,7 +169,7 @@ function init(debug) {
   }
 }
 
-export const createDebug = (await import('./common'))(configMap.colors)
+export const createDebug = common(configMap.colors)
 // export const = module.exports.createDebug;
 
 /**
