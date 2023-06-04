@@ -67,7 +67,7 @@ export default function setup(env) {
         return
       }
 
-      const self = debug
+      const self = this
 
       // Set `diff` timestamp
       const curr = Number(new Date())
