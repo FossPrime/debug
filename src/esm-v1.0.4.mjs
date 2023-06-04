@@ -1,4 +1,4 @@
-import cjsModule from './node-3.js'
+import cjsModule from './node-2.js'
 console.log('FUCK')
 export const debug = cjsModule
 export default debug
