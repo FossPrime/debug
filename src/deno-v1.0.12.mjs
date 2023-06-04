@@ -5,7 +5,9 @@ console.log('FUCK')
  */
 
 import * as tty from "https://deno.land/x/tty/mod.ts";
-import util from 'npm:util'
+import * as util from "https://deno.land/std@0.110.0/node/util.ts";
+
+
 
 /**
  * This is the Node.js implementation of `debug()`.
