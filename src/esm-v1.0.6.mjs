@@ -1,6 +1,5 @@
-import { createSetup } from './node-2.js'
 console.log('FUCK')
-export const debug = createSetup
+export const debug from (createSetup)
 export default debug
 
 /**
