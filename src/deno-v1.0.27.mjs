@@ -1,5 +1,3 @@
-console.log('FUCK')
-
 /**
  * Module dependencies.
  */
@@ -122,8 +120,7 @@ function getDate() {
  */
 
 function log(...args) {
-  // return process.stderr.write(util.format(...args) + '\n')
-  console.log(...args)
+  return Deno.stderr.write(util.format(...args) + '\n')
 }
 
 /**
