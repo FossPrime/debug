@@ -18,9 +18,7 @@ const configMap = {
   save: save,
   load: load,
   useColors: useColors,
-  colors: [6, 2, 3, 4, 5, 1],
-  destroy: util.deprecate(() => {},
-  'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'),
+  colors: [6, 2, 3, 4, 5, 1]
 }
 
 /**
