@@ -94,9 +94,9 @@ function useColors() {
  * @api public
  */
 
-function formatArgs(args, diff2) {
+function formatArgs(args) {
   const { namespace: name, useColors, diff } = this
-  console.log('wheres my diff', diff, diff2)
+  console.log('wheres my diff', diff, ms(diff), ms(9000))
 
   if (useColors) {
     const c = this.color
