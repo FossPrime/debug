@@ -96,7 +96,6 @@ function useColors() {
 
 function formatArgs(args) {
   const { namespace: name, useColors, diff } = this
-  console.log('wheres my diff', diff, ms(diff), ms(9000))
 
   if (useColors) {
     const c = this.color
@@ -122,6 +121,7 @@ function getDate() {
 
 function log(...args) {
   const output = new TextEncoder().encode(format(...args) + '\n')
+  console.warn(args)
   return Deno.isatty() ? Deno.stderr.write(output) : Deno.stdout.write(output)
 }
 
@@ -168,19 +168,15 @@ function init(debug) {
   }
 }
 
-export const createDebug = common(configMap)
-// export const = module.exports.createDebug;
-
 /**
  * Map %o to `inspect()`, all on a single line.
  */
-
 configMap.formatters.o = function (v) {
   this.inspectOpts.colors = this.useColors
   return util
     .inspect(v, this.inspectOpts)
     .split('\n')
-    .map((str) => str.trim())
+    .map(str => str.trim())
     .join(' ')
 }
 
@@ -192,3 +188,5 @@ configMap.formatters.O = function (v) {
   this.inspectOpts.colors = this.useColors
   return inspect(v, this.inspectOpts)
 }
+
+export const createDebug = common(configMap)
