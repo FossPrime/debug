@@ -125,9 +125,7 @@ export default function setupDebugCore(env) {
       })
 
       // Apply env-specific formatting (colors, etc.)
-      console.log('applying colors', args)
       createDebug.formatArgs.call(self, args)
-      console.log('applied colors', args)
 
       const logFn = self.log || createDebug.log
       logFn.apply(self, args)

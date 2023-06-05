@@ -120,7 +120,6 @@ export function formatArgs(args) {
  */
 function log(...args) {
   const output = new TextEncoder().encode(format(...args) + '\n')
-  console.warn(args)
   return Deno.isatty() ? Deno.stderr.write(output) : Deno.stdout.write(output)
 }
 
