@@ -96,9 +96,7 @@ export default function setupDebugCore(env) {
       self.curr = curr
       prevTime = curr
 
-      console.log('coercing args', args[0])
       args[0] = createDebug.coerce(args[0])
-      console.log('coerced args', args[0])
 
       if (typeof args[0] !== 'string') {
         // Anything else let's inspect with %O
@@ -116,9 +114,7 @@ export default function setupDebugCore(env) {
         const formatter = createDebug.formatters[format]
         if (typeof formatter === 'function') {
           const val = args[index]
-          console.log('formatting', val)
           match = formatter.call(self, val)
-          console.log('formatted', match)
 
           // Now we need to remove `args[index]` since it's inlined in the `format`
           args.splice(index, 1)
@@ -128,7 +124,9 @@ export default function setupDebugCore(env) {
       })
 
       // Apply env-specific formatting (colors, etc.)
+      console.log('applying colors', args)
       createDebug.formatArgs.call(self, args)
+      console.log('applied colors', args)
 
       const logFn = self.log || createDebug.log
       logFn.apply(self, args)
