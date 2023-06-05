@@ -87,6 +87,7 @@ export default function setupDebugCore(env) {
       }
 
       const self = debug
+      self.namespace = namespace
 
       // Set `diff` timestamp
       const curr = Number(new Date())
