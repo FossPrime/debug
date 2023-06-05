@@ -107,7 +107,6 @@ function formatArgs(args) {
     args.push(colorCode + 'm+' + ms(diff) + '\u001B[0m')
   } else {
     args[0] = getDate() + name + ' ' + args[0]
-    console.log('color and free', args[0])
   }
 }
 
@@ -123,9 +122,7 @@ function getDate() {
 
 function log(...args) {
   const output = new TextEncoder().encode(format(...args) + '\n')
-  console.log(args.join(' | '))
-  console.log(output)
-  return Deno.isatty() ? Deno.stderr.write(output) : Deno.stderr.write(output)
+  return Deno.isatty() ? Deno.stderr.write(output) : Deno.stdout.write(output)
 }
 
 /**
