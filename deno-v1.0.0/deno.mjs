@@ -84,8 +84,8 @@ configMap.inspectOpts = Object.keys(Deno.env.toObject())
 
 function useColors() {
   return 'colors' in configMap.inspectOpts
-    ? Boolean(configMap.inspectOpts.colors)
-    : false // tty.isatty(process.stderr.fd)
+    ? !!configMap.inspectOpts.colors
+    : Deno.isatty()
 }
 
 /**
@@ -107,6 +107,7 @@ function formatArgs(args) {
     args.push(colorCode + 'm+' + ms(diff) + '\u001B[0m')
   } else {
     args[0] = getDate() + name + ' ' + args[0]
+    console.log('color and free', args[0])
   }
 }
 
@@ -121,7 +122,10 @@ function getDate() {
  */
 
 function log(...args) {
-  return Deno.stderr.write(new TextEncoder().encode(format(...args) + '\n'))
+  const output = new TextEncoder().encode(format(...args) + '\n')
+  console.log(args.join(' | '))
+  console.log(output)
+  return Deno.isatty() ? Deno.stderr.write(output) : Deno.stderr.write(output)
 }
 
 /**
@@ -161,7 +165,7 @@ function load() {
 function init(debug) {
   debug.inspectOpts = {}
 
-  const keys = Object.keys(configMap.inspectOpts)
+  const keys = Object.keys(configMap.inspectOpts) // BAD, use for of
   for (let i = 0; i < keys.length; i++) {
     debug.inspectOpts[keys[i]] = configMap.inspectOpts[keys[i]]
   }
