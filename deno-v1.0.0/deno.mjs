@@ -1,9 +1,9 @@
 /**
  * Module dependencies.
  */
-import common from './common-7.mjs'
+import common from './common.mjs'
 import * as tty from 'https://deno.land/x/tty/mod.ts'
-import * as util from 'https://deno.land/std@0.110.0/node/util.ts'
+import { inspect, format } from 'https://deno.land/std@0.110.0/node/util.ts'
 import { ms } from "https://raw.githubusercontent.com/denolib/ms/master/ms.ts";
 
 
@@ -19,7 +19,6 @@ const configMap = {
   load: load,
   useColors: useColors,
   colors: [6, 2, 3, 4, 5, 1],
-  humanize: ms,
   destroy: util.deprecate(() => {},
   'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'),
 }
@@ -97,8 +96,9 @@ function useColors() {
  * @api public
  */
 
-function formatArgs(args) {
-  const { namespace: name, useColors } = this
+function formatArgs(args, diff2) {
+  const { namespace: name, useColors, diff } = this
+  console.log('wheres my diff', diff, diff2)
 
   if (useColors) {
     const c = this.color
@@ -106,7 +106,7 @@ function formatArgs(args) {
     const prefix = `  ${colorCode};1m${name} \u001B[0m`
 
     args[0] = prefix + args[0].split('\n').join('\n' + prefix)
-    args.push(colorCode + 'm+' + configMap.humanize(this.diff) + '\u001B[0m')
+    args.push(colorCode + 'm+' + ms(diff) + '\u001B[0m')
   } else {
     args[0] = getDate() + name + ' ' + args[0]
   }
@@ -119,11 +119,11 @@ function getDate() {
 }
 
 /**
- * Invokes `util.format()` with the specified arguments and writes to stderr.
+ * Invokes `format()` with the specified arguments and writes to stderr.
  */
 
 function log(...args) {
-  return Deno.stderr.write(new TextEncoder().encode(util.format(...args) + '\n'))
+  return Deno.stderr.write(new TextEncoder().encode(format(...args) + '\n'))
 }
 
 /**
@@ -173,7 +173,7 @@ export const createDebug = common(configMap)
 // export const = module.exports.createDebug;
 
 /**
- * Map %o to `util.inspect()`, all on a single line.
+ * Map %o to `inspect()`, all on a single line.
  */
 
 configMap.formatters.o = function (v) {
@@ -186,10 +186,10 @@ configMap.formatters.o = function (v) {
 }
 
 /**
- * Map %O to `util.inspect()`, allowing multiple lines if needed.
+ * Map %O to `inspect()`, allowing multiple lines if needed.
  */
 
 configMap.formatters.O = function (v) {
   this.inspectOpts.colors = this.useColors
-  return util.inspect(v, this.inspectOpts)
+  return inspect(v, this.inspectOpts)
 }
