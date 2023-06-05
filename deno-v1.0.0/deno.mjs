@@ -18,6 +18,7 @@ const configMap = {
   save: save,
   load: load,
   useColors: useColors,
+  formatters: {},
   colors: [6, 2, 3, 4, 5, 1]
 }
 
@@ -166,27 +167,6 @@ function init(debug) {
   for (let i = 0; i < keys.length; i++) {
     debug.inspectOpts[keys[i]] = configMap.inspectOpts[keys[i]]
   }
-}
-
-/**
- * Map %o to `inspect()`, all on a single line.
- */
-configMap.formatters.o = function (v) {
-  this.inspectOpts.colors = this.useColors
-  return util
-    .inspect(v, this.inspectOpts)
-    .split('\n')
-    .map(str => str.trim())
-    .join(' ')
-}
-
-/**
- * Map %O to `inspect()`, allowing multiple lines if needed.
- */
-
-configMap.formatters.O = function (v) {
-  this.inspectOpts.colors = this.useColors
-  return inspect(v, this.inspectOpts)
 }
 
 export const createDebug = common(configMap)

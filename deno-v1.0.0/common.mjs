@@ -3,7 +3,7 @@
  * implementations of `debug()`.
  */
 
-export default function setup(env) {
+export default function setupDebugCore(env) {
   createDebug.debug = createDebug
   createDebug.default = createDebug
   createDebug.coerce = coerce
@@ -28,7 +28,26 @@ export default function setup(env) {
    *
    * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
    */
-  env.formatters = {}
+  /**
+   * Map %o to `inspect()`, all on a single line.
+   */
+  env.formatters.o = function (v) {
+    this.inspectOpts.colors = this.useColors
+    return util
+      .inspect(v, this.inspectOpts)
+      .split('\n')
+      .map(str => str.trim())
+      .join(' ')
+  }
+
+  /**
+   * Map %O to `inspect()`, allowing multiple lines if needed.
+   */
+
+  env.formatters.O = function (v) {
+    this.inspectOpts.colors = this.useColors
+    return inspect(v, this.inspectOpts)
+  }
 
   /**
    * Selects a color for a debug namespace
