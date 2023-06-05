@@ -89,13 +89,17 @@ function useColors() {
     : Deno.isatty()
 }
 
-/**
- * Adds ANSI color escape codes if enabled.
- *
- * @api public
- */
 
-function formatArgs(args) {
+function getDate() {
+  if (configMap.inspectOpts.hideDate) {
+    return ''
+  } else {
+    return new Date().toISOString() + ' '
+  }
+}
+
+// Adds ANSI color escape codes if enabled.
+export function formatArgs(args) {
   const { namespace: name, useColors, diff } = this
 
   if (useColors) {
@@ -110,16 +114,10 @@ function formatArgs(args) {
   }
 }
 
-function getDate() {
-  if (configMap.inspectOpts.hideDate) {
-    return ''
-  }
-}
 
 /**
  * Invokes `format()` with the specified arguments and writes to stderr.
  */
-
 function log(...args) {
   const output = new TextEncoder().encode(format(...args) + '\n')
   console.warn(args)
